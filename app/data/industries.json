@@ -1,0 +1,220 @@
+{
+  "industries": [
+    {
+      "name": "Retail",
+      "critical_assets": [
+        "Point-of-sale systems",
+        "Customer payment data",
+        "E-commerce platforms",
+        "Inventory and supply chain systems"
+      ],
+      "common_threats": [
+        "Payment card theft",
+        "Credential stuffing",
+        "Third-party vendor compromise",
+        "Skimming malware"
+      ],
+      "security_priorities": [
+        "Protect payment environments",
+        "Secure customer accounts",
+        "Monitor third-party integrations",
+        "Maintain PCI DSS compliance"
+      ],
+      "common_attack_types": [
+        "Web application attacks",
+        "Phishing",
+        "Malware",
+        "Account takeover"
+      ]
+    },
+    {
+      "name": "Financial Services",
+      "critical_assets": [
+        "Core banking systems",
+        "Trading platforms",
+        "Customer financial records",
+        "Payment processing systems"
+      ],
+      "common_threats": [
+        "Fraud",
+        "Ransomware",
+        "Insider threats",
+        "Advanced persistent threats"
+      ],
+      "security_priorities": [
+        "Protect transaction integrity",
+        "Strengthen identity and access controls",
+        "Detect fraud quickly",
+        "Meet regulatory requirements"
+      ],
+      "common_attack_types": [
+        "Business email compromise",
+        "Credential theft",
+        "API abuse",
+        "DDoS attacks"
+      ]
+    },
+    {
+      "name": "Healthcare",
+      "critical_assets": [
+        "Electronic health records",
+        "Medical devices",
+        "Patient portals",
+        "Clinical operations systems"
+      ],
+      "common_threats": [
+        "Ransomware",
+        "Protected health information theft",
+        "Medical device compromise",
+        "Phishing"
+      ],
+      "security_priorities": [
+        "Protect patient data",
+        "Maintain clinical availability",
+        "Segment medical devices",
+        "Support HIPAA compliance"
+      ],
+      "common_attack_types": [
+        "Ransomware",
+        "Phishing",
+        "Exploitation of unpatched systems",
+        "Credential compromise"
+      ]
+    },
+    {
+      "name": "Government",
+      "critical_assets": [
+        "Citizen records",
+        "Public service platforms",
+        "Law enforcement systems",
+        "Critical infrastructure systems"
+      ],
+      "common_threats": [
+        "Nation-state activity",
+        "Ransomware",
+        "Data breaches",
+        "Hacktivism"
+      ],
+      "security_priorities": [
+        "Protect sensitive public data",
+        "Preserve service availability",
+        "Harden legacy systems",
+        "Improve incident response readiness"
+      ],
+      "common_attack_types": [
+        "Spear phishing",
+        "Supply chain compromise",
+        "Web application attacks",
+        "DDoS attacks"
+      ]
+    },
+    {
+      "name": "Manufacturing",
+      "critical_assets": [
+        "Industrial control systems",
+        "Operational technology networks",
+        "Production lines",
+        "Intellectual property"
+      ],
+      "common_threats": [
+        "Operational disruption",
+        "Ransomware",
+        "Industrial espionage",
+        "Supply chain compromise"
+      ],
+      "security_priorities": [
+        "Segment IT and OT environments",
+        "Protect production uptime",
+        "Secure remote access",
+        "Monitor industrial control systems"
+      ],
+      "common_attack_types": [
+        "Ransomware",
+        "Remote access compromise",
+        "Exploitation of exposed services",
+        "Malware"
+      ]
+    },
+    {
+      "name": "Education",
+      "critical_assets": [
+        "Student records",
+        "Learning management systems",
+        "Research data",
+        "Campus identity systems"
+      ],
+      "common_threats": [
+        "Account compromise",
+        "Ransomware",
+        "Data theft",
+        "Phishing"
+      ],
+      "security_priorities": [
+        "Protect student and staff data",
+        "Secure identity systems",
+        "Maintain learning platform availability",
+        "Safeguard research environments"
+      ],
+      "common_attack_types": [
+        "Phishing",
+        "Credential stuffing",
+        "Ransomware",
+        "Web application attacks"
+      ]
+    },
+    {
+      "name": "Technology",
+      "critical_assets": [
+        "Source code repositories",
+        "Cloud infrastructure",
+        "Customer data platforms",
+        "Build and deployment pipelines"
+      ],
+      "common_threats": [
+        "Supply chain compromise",
+        "Cloud misconfiguration",
+        "Credential theft",
+        "Intellectual property theft"
+      ],
+      "security_priorities": [
+        "Secure software delivery pipelines",
+        "Protect cloud workloads",
+        "Enforce least privilege access",
+        "Monitor secrets and credentials"
+      ],
+      "common_attack_types": [
+        "API attacks",
+        "Supply chain attacks",
+        "Credential compromise",
+        "Exploitation of vulnerable dependencies"
+      ]
+    },
+    {
+      "name": "Telecommunications",
+      "critical_assets": [
+        "Network infrastructure",
+        "Subscriber data",
+        "Billing systems",
+        "Identity and authentication platforms"
+      ],
+      "common_threats": [
+        "Service disruption",
+        "Subscriber data theft",
+        "Nation-state activity",
+        "Signaling network abuse"
+      ],
+      "security_priorities": [
+        "Maintain network availability",
+        "Protect subscriber privacy",
+        "Secure network management systems",
+        "Detect anomalous traffic patterns"
+      ],
+      "common_attack_types": [
+        "DDoS attacks",
+        "Credential theft",
+        "Exploitation of network devices",
+        "SIM swapping"
+      ]
+    }
+  ]
+}

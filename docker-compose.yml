@@ -13,10 +13,14 @@ services:
 
   frontend:
     build: .
-    command: streamlit run threatlens_ai.frontend.app --server.port 8501 --server.headless true
+    command: streamlit run threatlens_ai/frontend/app.py --server.port 8501 --server.headless true
     ports:
       - "8501:8501"
     env_file:
       - .env.example
+    environment:
+      - API_BASE_URL=http://backend:8000
+    depends_on:
+      - backend
     volumes:
       - ./:/app
