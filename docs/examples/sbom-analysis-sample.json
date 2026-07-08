@@ -1,0 +1,56 @@
+{
+  "component_count": 4,
+  "application_count": 1,
+  "components": [
+    {
+      "software_name": "payments-web",
+      "version": "4.1.0",
+      "supplier": "Acme",
+      "package_url": null,
+      "component_type": "application"
+    },
+    {
+      "software_name": "auth-service",
+      "version": "2.3.1",
+      "supplier": "Acme",
+      "package_url": null,
+      "component_type": "service"
+    },
+    {
+      "software_name": "openssl",
+      "version": "3.0.11",
+      "supplier": "OpenSSL",
+      "package_url": null,
+      "component_type": "library"
+    },
+    {
+      "software_name": "log4j-core",
+      "version": "2.17.1",
+      "supplier": "Apache",
+      "package_url": null,
+      "component_type": "library"
+    }
+  ],
+  "applications": [
+    {
+      "software_name": "payments-web",
+      "version": "4.1.0",
+      "supplier": "Acme",
+      "package_url": null,
+      "component_type": "application"
+    }
+  ],
+  "exposure_analysis": {
+    "internet_exposed": true,
+    "public_services": 2,
+    "exposed_assets": 4,
+    "third_party_exposure": true,
+    "data_sensitivity": "low"
+  },
+  "recommendations": [
+    "Cross-reference each component and version against CISA KEV and the NVD to identify known exploited vulnerabilities.",
+    "Place the 2 internet-facing service(s) behind a gateway or WAF and minimize their public attack surface.",
+    "Review third-party and supplier components for provenance, maintenance status, and supply-chain risk.",
+    "Establish a patch-management cadence to keep the 4 tracked component(s) current."
+  ]
+}
