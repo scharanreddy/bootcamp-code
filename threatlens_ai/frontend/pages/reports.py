@@ -5,6 +5,7 @@ from typing import Any
 
 import streamlit as st
 
+from threatlens_ai.frontend import data
 from threatlens_ai.frontend.api_client import APIClientError, ThreatLensAPIClient
 from threatlens_ai.frontend.components import render_error
 from threatlens_ai.frontend.constants import INDUSTRIES
@@ -38,12 +39,15 @@ def render(client: ThreatLensAPIClient) -> None:
     sbom_text = uploaded_file.getvalue().decode("utf-8") if uploaded_file is not None else None
     industry_value = None if industry == _NO_INDUSTRY else industry
 
-    with st.spinner("Running the full orchestration pipeline..."):
+    with st.status("Running the full orchestration pipeline…", expanded=True) as status:
+        st.write("🔍 Threat Intelligence → 🏭 Industry → 📦 Exposure → ⚖️ Risk → 📝 Advisor")
         try:
-            result = client.orchestrate(cve=cve, industry=industry_value, sbom=sbom_text)
+            result = data.orchestrate(client, cve=cve, industry=industry_value, sbom=sbom_text)
         except APIClientError as error:
+            status.update(label="Advisory generation failed", state="error")
             render_error(str(error))
             return
+        status.update(label=f"Advisory ready for {cve}", state="complete", expanded=False)
 
     _render_report(result, cve=cve)
 

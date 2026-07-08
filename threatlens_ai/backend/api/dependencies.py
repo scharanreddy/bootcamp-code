@@ -7,6 +7,7 @@ from threatlens_ai.agent.industry_intelligence import IndustryIntelligenceAgent
 from threatlens_ai.agent.orchestrator import LangGraphOrchestrator
 from threatlens_ai.agent.threat_intelligence import ThreatIntelligenceAgent
 from threatlens_ai.backend.services.interfaces import ThreatServiceProtocol
+from threatlens_ai.backend.services.sbom_service import SBOMAnalysisService
 from threatlens_ai.backend.services.threat_service import ThreatService
 
 _cisa_service = CISAService()
@@ -16,6 +17,7 @@ _threat_intelligence_agent = ThreatIntelligenceAgent(_cisa_service, _nvd_service
 _advisor_agent = AdvisorAgent(OpenAIAdvisoryReportGenerator())
 _exposure_agent = ExposureAgent()
 _risk_agent = RiskAgent()
+_sbom_service = SBOMAnalysisService(_exposure_agent)
 _orchestrator = LangGraphOrchestrator(
     threat_agent=_threat_intelligence_agent,
     industry_agent=_industry_intelligence_agent,
@@ -68,3 +70,8 @@ def get_risk_agent() -> RiskAgent:
 def get_orchestrator() -> LangGraphOrchestrator:
     """Provide the LangGraph orchestrator for dependency injection."""
     return _orchestrator
+
+
+def get_sbom_service() -> SBOMAnalysisService:
+    """Provide the SBOM analysis service for dependency injection."""
+    return _sbom_service

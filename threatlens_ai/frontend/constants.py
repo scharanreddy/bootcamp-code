@@ -12,6 +12,15 @@ INDUSTRIES: list[str] = [
     "Telecommunications",
 ]
 
+# Industries surfaced on the Industry Intelligence page.
+INDUSTRY_INTELLIGENCE_OPTIONS: list[str] = [
+    "Retail",
+    "Healthcare",
+    "Government",
+    "Financial Services",
+    "Technology",
+]
+
 NAV_HOME = "🏠 Home"
 NAV_THREAT_FEED = "📡 Threat Feed"
 NAV_ANALYZE_CVE = "🔍 Analyze CVE"

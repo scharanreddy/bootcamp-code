@@ -6,6 +6,7 @@ from typing import Any
 import pandas as pd
 import streamlit as st
 
+from threatlens_ai.frontend import data
 from threatlens_ai.frontend.api_client import APIClientError, ThreatLensAPIClient
 from threatlens_ai.frontend.components import render_error, render_kev_cards, render_kev_table, render_metric_cards
 
@@ -21,7 +22,8 @@ def render(client: ThreatLensAPIClient) -> None:
     st.caption("A real-time snapshot of known exploited vulnerabilities tracked by CISA.")
 
     try:
-        items = client.get_latest_threats(limit=_HOME_FEED_LIMIT)
+        with st.spinner("Loading the latest CISA KEV feed…"):
+            items = data.latest_threats(client, limit=_HOME_FEED_LIMIT)
     except APIClientError as error:
         render_error(str(error))
         return

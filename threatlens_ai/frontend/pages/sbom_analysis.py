@@ -1,81 +1,117 @@
 from __future__ import annotations
 
-import re
 from typing import Any
 
 import streamlit as st
 
+from threatlens_ai.frontend import data
 from threatlens_ai.frontend.api_client import APIClientError, ThreatLensAPIClient
-from threatlens_ai.frontend.components import render_error
-from threatlens_ai.frontend.constants import INDUSTRIES
-
-_CVE_PATTERN = re.compile(r"^CVE-\d{4}-\d{4,}$", re.IGNORECASE)
-_NO_INDUSTRY = "None"
+from threatlens_ai.frontend.components import (
+    render_bullets,
+    render_chips,
+    render_component_table,
+    render_error,
+    render_metric_cards,
+)
+from threatlens_ai.frontend.theme import severity_badge
 
 
 def render(client: ThreatLensAPIClient) -> None:
-    """Render the SBOM Analysis page: exposure and risk assessment from an uploaded SBOM."""
-    st.title("SBOM Analysis")
-    st.caption(
-        "Upload a CycloneDX SBOM to assess exposure and combine it with a CVE for a risk assessment."
-    )
+    """Render the SBOM Analysis page: component and exposure analysis from a CycloneDX SBOM."""
+    st.title("📦 SBOM Analysis")
+    st.caption("Upload a CycloneDX SBOM to enumerate components and assess exposure.")
 
-    uploaded_file = st.file_uploader("Upload CycloneDX SBOM", type=["json", "xml"])
-
-    with st.form("sbom_analysis_form"):
-        cve = st.text_input("Related CVE", placeholder="CVE-2026-1234")
-        industry = st.selectbox("Industry (optional)", [_NO_INDUSTRY, *INDUSTRIES])
-        submitted = st.form_submit_button("Run Exposure & Risk Analysis", type="primary")
-
-    if not submitted:
-        return
+    uploaded_file = st.file_uploader("Upload CycloneDX SBOM (JSON or XML)", type=["json", "xml"])
+    analyze = st.button("Analyze", type="primary", disabled=uploaded_file is None)
 
     if uploaded_file is None:
-        render_error("Upload a CycloneDX SBOM (JSON or XML) before running the analysis.")
+        st.info("No exposure analysis performed.")
         return
 
-    cve = cve.strip().upper()
-    if not _CVE_PATTERN.fullmatch(cve):
-        render_error("Enter a CVE using the format CVE-YYYY-NNNN.")
+    if not analyze:
         return
 
-    sbom_text = uploaded_file.getvalue().decode("utf-8")
-    industry_value = None if industry == _NO_INDUSTRY else industry
+    try:
+        sbom_text = uploaded_file.getvalue().decode("utf-8")
+    except UnicodeDecodeError:
+        render_error("The uploaded file is not valid UTF-8 text.")
+        return
 
-    with st.spinner("Analyzing exposure and risk..."):
-        try:
-            result = client.orchestrate(cve=cve, industry=industry_value, sbom=sbom_text)
-        except APIClientError as error:
-            render_error(str(error))
-            return
+    result = _run_analysis(client, sbom_text)
+    if result is None:
+        return
 
-    st.session_state["last_orchestration"] = result
     _render_result(result)
 
 
+def _run_analysis(client: ThreatLensAPIClient, sbom_text: str) -> dict[str, Any] | None:
+    """Invoke the backend while surfacing the analysis progress."""
+    with st.status("Analyzing SBOM…", expanded=True) as status:
+        st.write("📦 Parsing CycloneDX components…")
+        st.write("🧠 Deriving the exposure profile…")
+        try:
+            result = data.analyze_sbom(client, sbom_text)
+        except APIClientError as error:
+            status.update(label="SBOM analysis failed", state="error")
+            render_error(str(error))
+            return None
+        status.update(label="SBOM analysis complete", state="complete", expanded=False)
+    return result
+
+
 def _render_result(result: dict[str, Any]) -> None:
-    exposure = result.get("exposure_analysis")
-    risk = result.get("risk_assessment")
+    exposure = result.get("exposure_analysis") or {}
 
-    if exposure is None:
-        st.warning("The backend did not return an exposure analysis for this SBOM.")
+    render_metric_cards(
+        [
+            ("Components", str(result.get("component_count", 0)), None),
+            ("Applications", str(result.get("application_count", 0)), None),
+            ("Public Services", str(exposure.get("public_services", 0)), None),
+            ("Internet Exposed", "Yes" if exposure.get("internet_exposed") else "No", None),
+        ]
+    )
+
+    st.markdown("#### 🧩 Affected Components")
+    render_component_table(result.get("components"))
+
+    st.markdown("#### 🖥️ Applications")
+    applications = result.get("applications") or []
+    if applications:
+        render_chips(
+            [_component_label(app) for app in applications],
+            icon="🖥️",
+        )
     else:
-        st.subheader("Exposure Profile")
-        cols = st.columns(4)
-        cols[0].metric("Exposed Assets", exposure.get("exposed_assets", 0))
-        cols[1].metric("Public Services", exposure.get("public_services", 0))
-        cols[2].metric("Third-Party Exposure", "Yes" if exposure.get("third_party_exposure") else "No")
-        cols[3].metric("Data Sensitivity", str(exposure.get("data_sensitivity", "—")).title())
+        st.write("No application-type components found in this SBOM.")
 
-    if risk is not None:
-        st.subheader("Risk Assessment")
-        cols = st.columns(4)
-        cols[0].metric("Overall Risk", f"{risk.get('overall_risk', 0):.1f}/10")
-        cols[1].metric("Priority", str(risk.get("priority", "—")).title())
-        cols[2].metric("Business Impact", f"{risk.get('business_impact', 0):.1f}/10")
-        cols[3].metric("Confidence", f"{risk.get('confidence', 0):.0f}%")
+    st.markdown("#### ⚠️ Risk")
+    _render_risk(exposure)
 
-        with st.expander("Risk score breakdown"):
-            st.json(risk.get("breakdown", {}))
+    st.markdown("#### ✅ Recommendations")
+    render_bullets(result.get("recommendations"))
 
-    st.info("Head to the Reports page to generate the full advisory using this CVE and SBOM context.")
+    with st.expander("Raw analysis data"):
+        st.json(result)
+
+
+def _render_risk(exposure: dict[str, Any]) -> None:
+    """Render the exposure-derived risk profile."""
+    if not exposure:
+        st.write("—")
+        return
+
+    col_assets, col_third_party, col_sensitivity = st.columns(3)
+    col_assets.metric("Exposed Assets", exposure.get("exposed_assets", 0))
+    col_third_party.metric(
+        "Third-Party Exposure", "Yes" if exposure.get("third_party_exposure") else "No"
+    )
+    with col_sensitivity:
+        st.caption("Data Sensitivity")
+        st.markdown(severity_badge(exposure.get("data_sensitivity")), unsafe_allow_html=True)
+
+
+def _component_label(component: dict[str, Any]) -> str:
+    """Build a compact 'name vX.Y' label for an application component."""
+    name = component.get("software_name") or "Unknown"
+    version = component.get("version")
+    return f"{name} v{version}" if version else name

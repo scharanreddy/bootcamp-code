@@ -60,6 +60,9 @@ class IndustryReportResponse(BaseModel):
     current_risks: list[str] = Field(..., description="Current risks for the industry")
     recommended_controls: list[str] = Field(..., description="Recommended security controls")
     business_impact: list[str] = Field(..., description="Likely business impact areas")
+    common_attack_types: list[str] = Field(
+        default_factory=list, description="Common attack patterns observed in the industry"
+    )
 
 
 class ThreatIntelligenceReportRequest(BaseModel):
@@ -171,3 +174,32 @@ class OrchestrationResponse(BaseModel):
     )
     risk_assessment: dict[str, Any] | None = Field(None, description="Risk Agent output")
     advisory: AdvisorReportResponse = Field(..., description="Advisor Agent output")
+
+
+class SBOMAnalysisRequest(BaseModel):
+    """Request model for SBOM exposure analysis."""
+
+    sbom: str = Field(..., min_length=1, description="Raw CycloneDX SBOM document (JSON or XML)")
+
+
+class SBOMComponentResponse(BaseModel):
+    """A single normalized software component from a CycloneDX SBOM."""
+
+    software_name: str | None = Field(None, description="Component or application name")
+    version: str | None = Field(None, description="Component version")
+    supplier: str | None = Field(None, description="Component supplier")
+    package_url: str | None = Field(None, description="Package URL (purl)")
+    component_type: str | None = Field(None, description="CycloneDX component type")
+
+
+class SBOMAnalysisResponse(BaseModel):
+    """Response model for SBOM exposure analysis."""
+
+    component_count: int = Field(..., description="Total number of components in the SBOM")
+    application_count: int = Field(..., description="Number of application-type components")
+    components: list[SBOMComponentResponse] = Field(..., description="All affected components")
+    applications: list[SBOMComponentResponse] = Field(
+        ..., description="Application-type components"
+    )
+    exposure_analysis: dict[str, Any] = Field(..., description="Exposure Agent risk profile")
+    recommendations: list[str] = Field(..., description="Exposure-driven recommendations")

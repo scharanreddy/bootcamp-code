@@ -34,6 +34,10 @@ class ExposureAgent:
         except CycloneDXParseError as error:
             raise ExposureAgentError("Failed to parse SBOM for exposure analysis") from error
 
+        return self.analyze_components(components)
+
+    def analyze_components(self, components: list[CycloneDXComponent]) -> ExposureAnalysis:
+        """Derive an exposure analysis from already-parsed CycloneDX components."""
         exposure = self._derive_exposure(components)
         logger.debug(
             "Derived exposure analysis from %d SBOM components: %s",
@@ -67,3 +71,45 @@ class ExposureAgent:
             third_party_exposure=third_party_exposure,
             data_sensitivity=data_sensitivity,
         )
+
+
+def recommend_from_exposure(
+    components: list[CycloneDXComponent],
+    exposure: ExposureAnalysis,
+) -> list[str]:
+    """Derive deterministic, exposure-driven remediation recommendations.
+
+    Pure function (no I/O) so it is straightforward to unit test.
+    """
+    if not components:
+        return [
+            "The SBOM contained no components; verify it is a valid CycloneDX document "
+            "before relying on this analysis."
+        ]
+
+    recommendations = [
+        "Cross-reference each component and version against CISA KEV and the NVD to "
+        "identify known exploited vulnerabilities."
+    ]
+
+    if exposure.internet_exposed or exposure.public_services:
+        recommendations.append(
+            f"Place the {exposure.public_services} internet-facing service(s) behind a "
+            "gateway or WAF and minimize their public attack surface."
+        )
+    if exposure.third_party_exposure:
+        recommendations.append(
+            "Review third-party and supplier components for provenance, maintenance "
+            "status, and supply-chain risk."
+        )
+    if exposure.data_sensitivity in {"high", "critical"}:
+        recommendations.append(
+            "Apply stricter change control and monitoring given the high data "
+            "sensitivity of the affected systems."
+        )
+
+    recommendations.append(
+        f"Establish a patch-management cadence to keep the {exposure.exposed_assets} "
+        "tracked component(s) current."
+    )
+    return recommendations

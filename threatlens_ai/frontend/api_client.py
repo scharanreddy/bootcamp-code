@@ -55,6 +55,10 @@ class ThreatLensAPIClient:
             json={"cve": cve, "industry": industry, "sbom": sbom},
         )
 
+    def analyze_sbom(self, sbom: str) -> dict[str, Any]:
+        """Analyze a CycloneDX SBOM for components and exposure."""
+        return self._post("/sbom/analyze", json={"sbom": sbom})
+
     def _get(self, path: str, params: dict[str, Any] | None = None) -> Any:
         return self._request("GET", path, params=params)
 
@@ -66,15 +70,26 @@ class ThreatLensAPIClient:
         try:
             with httpx.Client(timeout=self.timeout) as client:
                 response = client.request(method, url, **kwargs)
+        except httpx.TimeoutException as error:
+            raise APIClientError(
+                f"The backend did not respond within {self.timeout:.0f}s. "
+                "The analysis may be taking longer than usual — please try again."
+            ) from error
         except httpx.RequestError as error:
             raise APIClientError(
-                f"Could not reach the ThreatLens AI backend at {self.base_url}."
+                f"Could not reach the ThreatLens AI backend at {self.base_url}. "
+                "Is the backend running?"
             ) from error
 
         if response.is_error:
             raise APIClientError(self._extract_error_detail(response))
 
-        return response.json()
+        try:
+            return response.json()
+        except ValueError as error:
+            raise APIClientError(
+                "The backend returned an unexpected (non-JSON) response."
+            ) from error
 
     @staticmethod
     def _extract_error_detail(response: httpx.Response) -> str:

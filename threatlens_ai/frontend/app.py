@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from threatlens_ai.frontend import data
 from threatlens_ai.frontend.api_client import APIClientError, ThreatLensAPIClient
 from threatlens_ai.frontend.constants import (
     NAV_ANALYZE_CVE,
@@ -50,7 +51,7 @@ def _render_sidebar(client: ThreatLensAPIClient) -> str:
 
 def _render_backend_status(client: ThreatLensAPIClient) -> None:
     try:
-        client.health()
+        data.health(client)
     except APIClientError:
         st.markdown("🔴 **Backend offline**")
         st.caption(f"Could not reach {client.base_url}")
@@ -59,16 +60,39 @@ def _render_backend_status(client: ThreatLensAPIClient) -> None:
         st.caption(client.base_url)
 
 
+def _render_footer() -> None:
+    st.divider()
+    st.caption(
+        "🛡️ ThreatLens AI · Data sourced from CISA KEV and NVD · "
+        "For authorized security use only."
+    )
+
+
 def main() -> None:
     """Streamlit app entrypoint."""
-    st.set_page_config(page_title="ThreatLens AI", page_icon="🛡️", layout="wide")
+    st.set_page_config(
+        page_title="ThreatLens AI",
+        page_icon="🛡️",
+        layout="wide",
+        menu_items={"about": "ThreatLens AI — AI-powered threat intelligence platform."},
+    )
     apply_theme()
 
     client = _get_client()
     page = _render_sidebar(client)
 
     render_page = _PAGE_RENDERERS[page]
-    render_page(client)
+    try:
+        render_page(client)
+    except APIClientError as error:
+        # Defensive: pages handle this themselves, but never leak a raw traceback.
+        st.error(f"⚠️ {error}")
+    except Exception as error:  # noqa: BLE001 - top-level UI guard
+        st.error("⚠️ Something went wrong while rendering this page. Please try again.")
+        with st.expander("Technical details"):
+            st.exception(error)
+
+    _render_footer()
 
 
 if __name__ == "__main__":

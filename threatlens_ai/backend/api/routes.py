@@ -4,6 +4,7 @@ from importlib.metadata import PackageNotFoundError, version as package_version
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.services.cisa import CISAService, CISAServiceError
+from app.services.cyclonedx import CycloneDXParseError
 from app.services.nvd import NVDServiceError
 from threatlens_ai.agent.advisor_agent import AdvisorAgent, AdvisorAgentError
 from threatlens_ai.agent.exposure_agent import ExposureAgentError
@@ -22,6 +23,7 @@ from threatlens_ai.backend.api.dependencies import (
     get_cisa_service,
     get_industry_intelligence_agent,
     get_orchestrator,
+    get_sbom_service,
     get_threat_intelligence_agent,
     get_threat_service,
     ThreatServiceProtocol,
@@ -37,11 +39,14 @@ from threatlens_ai.backend.api.schemas import (
     OrchestrationRequest,
     OrchestrationResponse,
     PlaceholderResponse,
+    SBOMAnalysisRequest,
+    SBOMAnalysisResponse,
     ServiceInfoResponse,
     ThreatIntelligenceReportRequest,
     ThreatIntelligenceReportResponse,
     VersionResponse,
 )
+from threatlens_ai.backend.services.sbom_service import SBOMAnalysisService
 
 router = APIRouter()
 
@@ -309,3 +314,33 @@ def orchestrate_report(
         ) from error
 
     return OrchestrationResponse.model_validate(final_state)
+
+
+@router.post(
+    "/sbom/analyze",
+    response_model=SBOMAnalysisResponse,
+    summary="Analyze a CycloneDX SBOM",
+    description=(
+        "Parse a CycloneDX SBOM, enumerate its components and applications, and derive "
+        "an exposure profile and remediation recommendations via the Exposure Agent."
+    ),
+)
+def analyze_sbom(
+    request: SBOMAnalysisRequest,
+    sbom_service: SBOMAnalysisService = Depends(get_sbom_service),
+) -> SBOMAnalysisResponse:
+    """Analyze an uploaded CycloneDX SBOM and map parsing failures to HTTP errors."""
+    try:
+        result = sbom_service.analyze(request.sbom)
+    except CycloneDXParseError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(error),
+        ) from error
+    except ExposureAgentError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(error),
+        ) from error
+
+    return SBOMAnalysisResponse.model_validate(result)

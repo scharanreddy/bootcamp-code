@@ -4,6 +4,7 @@ from typing import Any
 
 import streamlit as st
 
+from threatlens_ai.frontend import data
 from threatlens_ai.frontend.api_client import APIClientError, ThreatLensAPIClient
 from threatlens_ai.frontend.components import render_error, render_kev_table
 
@@ -24,7 +25,8 @@ def render(client: ThreatLensAPIClient) -> None:
         limit = st.selectbox("Entries to load", _FEED_LIMIT_OPTIONS, index=1)
 
     try:
-        items = client.get_latest_threats(limit=limit)
+        with st.spinner("Loading the CISA KEV catalog…"):
+            items = data.latest_threats(client, limit=limit)
     except APIClientError as error:
         render_error(str(error))
         return
