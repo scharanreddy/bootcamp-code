@@ -10,13 +10,15 @@ os.environ.setdefault("NVD_API_KEY", "test-nvd")
 from app.services.nvd import NVDService, NVDServiceError
 
 
+# Mirrors the real NVD 2.0 response shape: published/lastModified/configurations
+# are nested under `cve`, configurations is a list, and the CPE is under `criteria`.
 SAMPLE_NVD_RESPONSE = {
     "vulnerabilities": [
         {
-            "published": "2026-07-01T12:00Z",
-            "lastModified": "2026-07-02T12:00Z",
             "cve": {
                 "id": "CVE-2026-1234",
+                "published": "2026-07-01T12:00Z",
+                "lastModified": "2026-07-02T12:00Z",
                 "descriptions": [
                     {"lang": "en", "value": "Example description."},
                 ],
@@ -27,9 +29,8 @@ SAMPLE_NVD_RESPONSE = {
                                 "version": "3.1",
                                 "baseScore": 7.5,
                                 "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-                                "severity": "HIGH",
+                                "baseSeverity": "HIGH",
                             },
-                            "baseSeverity": "HIGH",
                         }
                     ]
                 },
@@ -39,18 +40,20 @@ SAMPLE_NVD_RESPONSE = {
                 "weaknesses": [
                     {"description": [{"value": "CWE-79", "lang": "en"}]}
                 ],
-            },
-            "configurations": {
-                "nodes": [
+                "configurations": [
                     {
-                        "cpeMatch": [
+                        "nodes": [
                             {
-                                "cpe23Uri": "cpe:2.3:a:examplecorp:exampleproduct:1.0:*:*:*:*:*:*:*",
-                                "vulnerable": True,
+                                "cpeMatch": [
+                                    {
+                                        "criteria": "cpe:2.3:a:examplecorp:exampleproduct:1.0:*:*:*:*:*:*:*",
+                                        "vulnerable": True,
+                                    }
+                                ]
                             }
                         ]
                     }
-                ]
+                ],
             },
         }
     ]
@@ -58,7 +61,7 @@ SAMPLE_NVD_RESPONSE = {
 
 
 def make_response(status_code: int, json_data: dict[str, object]) -> httpx.Response:
-    request = httpx.Request("GET", "https://api.nvd.nist.gov/vuln/v2")
+    request = httpx.Request("GET", "https://services.nvd.nist.gov/rest/json/cves/2.0")
     return httpx.Response(status_code, json=json_data, request=request)
 
 
@@ -74,6 +77,7 @@ class TestNVDService(unittest.TestCase):
         self.assertEqual(vulnerability.cve_id, "CVE-2026-1234")
         self.assertEqual(vulnerability.description, "Example description.")
         self.assertEqual(vulnerability.cvss.base_score, 7.5)
+        self.assertEqual(vulnerability.cvss.severity, "HIGH")
         self.assertEqual(vulnerability.cvss.vector_string, "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H")
         self.assertEqual(vulnerability.references[0].url, "https://example.com")
         self.assertEqual(vulnerability.affected_products[0].cpe_uri, "cpe:2.3:a:examplecorp:exampleproduct:1.0:*:*:*:*:*:*:*")

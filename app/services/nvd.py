@@ -12,7 +12,7 @@ from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-NVD_API_URL = "https://api.nvd.nist.gov/vuln/v2"
+NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 DEFAULT_MAX_RETRIES = 3
 DEFAULT_BACKOFF_SECONDS = 1.0
 
@@ -94,30 +94,36 @@ def _extract_references(reference_data: list[dict[str, Any]]) -> list[NVDReferen
     return results
 
 
-def _extract_affected_products(configurations: dict[str, Any] | None) -> list[AffectedProduct]:
-    """Extract affected product CPEs from the NVD API configuration tree."""
+def _extract_affected_products(configurations: Any) -> list[AffectedProduct]:
+    """Extract affected product CPEs from the NVD 2.0 configuration tree.
+
+    NVD 2.0 returns ``configurations`` as a list of objects, each with ``nodes``
+    that carry ``cpeMatch`` entries whose CPE string is under the ``criteria`` key.
+    """
     if not configurations:
         return []
 
-    products: list[AffectedProduct] = []
-    nodes = configurations.get("nodes", [])
-    for node in nodes:
-        for match in node.get("cpeMatch", []):
-            cpe_uri = match.get("cpe23Uri") or match.get("cpe22Uri")
-            if not cpe_uri:
-                continue
+    # Normalize to a list (2.0 returns a list; tolerate a single dict as well).
+    if isinstance(configurations, dict):
+        configurations = [configurations]
 
-            vendor, product, version = _parse_cpe(cpe_uri)
-            products.append(
-                AffectedProduct(
-                    cpe_uri=cpe_uri,
-                    vendor=vendor,
-                    product=product,
-                    version=version,
+    products: list[AffectedProduct] = []
+    for configuration in configurations:
+        for node in configuration.get("nodes", []):
+            for match in node.get("cpeMatch", []):
+                cpe_uri = match.get("criteria") or match.get("cpe23Uri") or match.get("cpe22Uri")
+                if not cpe_uri:
+                    continue
+
+                vendor, product, version = _parse_cpe(cpe_uri)
+                products.append(
+                    AffectedProduct(
+                        cpe_uri=cpe_uri,
+                        vendor=vendor,
+                        product=product,
+                        version=version,
+                    )
                 )
-            )
-        for child in node.get("children", []):
-            products.extend(_extract_affected_products({"nodes": [child]}))
 
     return products
 
@@ -168,7 +174,10 @@ def _extract_cvss(cve_payload: dict[str, Any] | None) -> CVSSMetrics | None:
             version=score_data.get("version", key),
             base_score=score_data.get("baseScore"),
             vector_string=score_data.get("vectorString") or score_data.get("vectorV3"),
-            severity=metric.get("baseSeverity") or score_data.get("severity"),
+            # v3.x carries baseSeverity inside cvssData; v2 carries it on the metric.
+            severity=score_data.get("baseSeverity")
+            or metric.get("baseSeverity")
+            or score_data.get("severity"),
         )
 
     return None
@@ -207,10 +216,10 @@ class NVDService:
             description=_extract_description(cve_payload),
             cvss=_extract_cvss(cve_payload),
             references=_extract_references(cve_payload.get("references", [])),
-            affected_products=_extract_affected_products(vulnerability.get("configurations")),
+            affected_products=_extract_affected_products(cve_payload.get("configurations")),
             cwe=_extract_cwes(cve_payload.get("weaknesses", [])),
-            published_date=vulnerability.get("published") or vulnerability.get("publishedDate"),
-            last_modified_date=vulnerability.get("lastModified"),
+            published_date=cve_payload.get("published"),
+            last_modified_date=cve_payload.get("lastModified"),
         )
 
     def _request(self, params: dict[str, str]) -> dict[str, Any]:
