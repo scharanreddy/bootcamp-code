@@ -1,6 +1,6 @@
 import unittest
 
-from threatlens_ai.frontend.pages.analyze_cve import build_timeline_events
+from threatlens_ai.frontend.views.analyze_cve import build_timeline_events
 
 
 class TestBuildTimelineEvents(unittest.TestCase):

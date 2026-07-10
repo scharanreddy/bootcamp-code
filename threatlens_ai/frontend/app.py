@@ -1,5 +1,14 @@
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Ensure the project root is importable no matter how this script is launched
+# (`streamlit run …/app.py`, a container without an editable install, etc.).
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 import streamlit as st
 
 from threatlens_ai.frontend import data
@@ -13,7 +22,8 @@ from threatlens_ai.frontend.constants import (
     NAV_SBOM_ANALYSIS,
     NAV_THREAT_FEED,
 )
-from threatlens_ai.frontend.pages import (
+from threatlens_ai.frontend.theme import apply_theme
+from threatlens_ai.frontend.views import (
     analyze_cve,
     home,
     industry_intelligence,
@@ -21,7 +31,6 @@ from threatlens_ai.frontend.pages import (
     sbom_analysis,
     threat_feed,
 )
-from threatlens_ai.frontend.theme import apply_theme
 
 _PAGE_RENDERERS = {
     NAV_HOME: home.render,
