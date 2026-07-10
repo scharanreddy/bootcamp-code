@@ -25,6 +25,12 @@
         "Phishing",
         "Malware",
         "Account takeover"
+      ],
+      "apt_threat_actors": [
+        "FIN7 (Carbanak)",
+        "FIN6",
+        "Magecart groups",
+        "FIN8"
       ]
     },
     {
@@ -52,6 +58,13 @@
         "Credential theft",
         "API abuse",
         "DDoS attacks"
+      ],
+      "apt_threat_actors": [
+        "Lazarus Group (APT38)",
+        "FIN7 (Carbanak)",
+        "Cobalt Group",
+        "TA505",
+        "Silence Group"
       ]
     },
     {
@@ -79,6 +92,13 @@
         "Phishing",
         "Exploitation of unpatched systems",
         "Credential compromise"
+      ],
+      "apt_threat_actors": [
+        "APT41 (Winnti)",
+        "Lazarus Group",
+        "FIN12",
+        "Wizard Spider (Conti/Ryuk)",
+        "APT18 (Wekby)"
       ]
     },
     {
@@ -106,6 +126,14 @@
         "Supply chain compromise",
         "Web application attacks",
         "DDoS attacks"
+      ],
+      "apt_threat_actors": [
+        "APT28 (Fancy Bear)",
+        "APT29 (Cozy Bear)",
+        "APT40 (Leviathan)",
+        "APT31 (Zirconium)",
+        "Turla (Snake)",
+        "Sandworm (APT44)"
       ]
     },
     {
@@ -133,6 +161,13 @@
         "Remote access compromise",
         "Exploitation of exposed services",
         "Malware"
+      ],
+      "apt_threat_actors": [
+        "APT41 (Winnti)",
+        "APT10 (Stone Panda)",
+        "Lazarus Group",
+        "APT1 (Comment Crew)",
+        "LockBit"
       ]
     },
     {
@@ -160,6 +195,12 @@
         "Credential stuffing",
         "Ransomware",
         "Web application attacks"
+      ],
+      "apt_threat_actors": [
+        "Silent Librarian (Cobalt Dickens)",
+        "TA453 (Charming Kitten)",
+        "APT41 (Winnti)",
+        "Lazarus Group"
       ]
     },
     {
@@ -187,6 +228,13 @@
         "Supply chain attacks",
         "Credential compromise",
         "Exploitation of vulnerable dependencies"
+      ],
+      "apt_threat_actors": [
+        "APT41 (Winnti)",
+        "APT10 (Stone Panda)",
+        "APT29 (Cozy Bear)",
+        "APT3 (Gothic Panda)",
+        "Lazarus Group"
       ]
     },
     {
@@ -214,6 +262,13 @@
         "Credential theft",
         "Exploitation of network devices",
         "SIM swapping"
+      ],
+      "apt_threat_actors": [
+        "Salt Typhoon",
+        "LightBasin (UNC1945)",
+        "APT41 (Winnti)",
+        "APT10 (Stone Panda)",
+        "Turla"
       ]
     }
   ]

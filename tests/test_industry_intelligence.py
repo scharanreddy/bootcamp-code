@@ -27,6 +27,14 @@ class TestIndustryReportExposesAttackPatterns(unittest.TestCase):
         self.assertIn("common_attack_types", body)
         self.assertTrue(body["common_attack_types"], "attack patterns should not be empty")
 
+    def test_route_returns_apt_threat_actors(self) -> None:
+        response = make_client().post("/industry/report", json={"industry": "Government"})
+
+        self.assertEqual(response.status_code, 200)
+        actors = response.json()["apt_threat_actors"]
+        self.assertTrue(actors, "APT threat actors should not be empty")
+        self.assertIn("APT28 (Fancy Bear)", actors)
+
     def test_agent_output_matches_all_five_display_sections(self) -> None:
         report = IndustryIntelligenceAgent().generate_report("Financial Services")
 
@@ -36,6 +44,7 @@ class TestIndustryReportExposesAttackPatterns(unittest.TestCase):
         self.assertTrue(report["common_attack_types"])
         self.assertTrue(report["recommended_controls"])
         self.assertTrue(report["business_impact"])
+        self.assertTrue(report["apt_threat_actors"])
 
 
 class TestIndustryIntelligencePageOptions(unittest.TestCase):

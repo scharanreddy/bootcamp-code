@@ -98,6 +98,8 @@ def generate_industry_briefing() -> None:
         f"## Executive Briefing\n\n{report['executive_summary']}\n\n"
         + section("Top Threats", report["top_threats"])
         + "\n"
+        + section("APT Threat Actors", report["apt_threat_actors"])
+        + "\n"
         + section("Attack Patterns", report["common_attack_types"])
         + "\n"
         + section("Recommended Controls", report["recommended_controls"])

@@ -11,6 +11,14 @@ Financial Services organizations should prioritize protection of Core banking sy
 - Insider threats
 - Advanced persistent threats
 
+## APT Threat Actors
+
+- Lazarus Group (APT38)
+- FIN7 (Carbanak)
+- Cobalt Group
+- TA505
+- Silence Group
+
 ## Attack Patterns
 
 - Business email compromise

@@ -30,6 +30,7 @@ class IndustryIntelligenceAgent:
         common_threats = industry_data["common_threats"]
         security_priorities = industry_data["security_priorities"]
         common_attack_types = industry_data["common_attack_types"]
+        apt_threat_actors = industry_data.get("apt_threat_actors", [])
 
         logger.debug("Generating industry intelligence report for %s.", name)
         return {
@@ -53,6 +54,7 @@ class IndustryIntelligenceAgent:
                 "Financial impact from incident response, fraud, recovery, and remediation",
             ],
             "common_attack_types": common_attack_types,
+            "apt_threat_actors": apt_threat_actors,
         }
 
     def _find_industry(self, industry: str) -> dict[str, Any]:

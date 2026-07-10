@@ -55,10 +55,12 @@ def _render_report(report: dict[str, Any]) -> None:
     top_threats = report.get("top_threats") or []
     attack_patterns = report.get("common_attack_types") or []
     controls = report.get("recommended_controls") or []
+    apt_actors = report.get("apt_threat_actors") or []
     render_metric_cards(
         [
             ("Top Threats", str(len(top_threats)), None),
             ("Attack Patterns", str(len(attack_patterns)), None),
+            ("APT Groups", str(len(apt_actors)), None),
             ("Recommended Controls", str(len(controls)), None),
         ]
     )
@@ -66,6 +68,10 @@ def _render_report(report: dict[str, Any]) -> None:
     st.markdown("#### 📋 Executive Briefing")
     with st.container(border=True):
         st.write(report.get("executive_summary") or "—")
+
+    st.markdown("#### 🎭 APT Threat Actors")
+    st.caption("Advanced persistent threat groups known to target this industry.")
+    render_chips(apt_actors, icon="🎭")
 
     col_threats, col_patterns = st.columns(2)
     with col_threats:

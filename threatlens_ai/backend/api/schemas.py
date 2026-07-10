@@ -63,6 +63,9 @@ class IndustryReportResponse(BaseModel):
     common_attack_types: list[str] = Field(
         default_factory=list, description="Common attack patterns observed in the industry"
     )
+    apt_threat_actors: list[str] = Field(
+        default_factory=list, description="APT groups known to target the industry"
+    )
 
 
 class ThreatIntelligenceReportRequest(BaseModel):
