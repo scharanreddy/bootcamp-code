@@ -18,10 +18,14 @@ RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 COPY . /app
 
 # Run as a non-root user.
-RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
+RUN useradd --create-home --uid 10001 appuser \
+    && chmod +x /app/start.sh \
+    && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8000 8501
+# 8000 backend, 8501 frontend (compose), 7860 all-in-one (Hugging Face Spaces).
+EXPOSE 8000 8501 7860
 
-# Default command runs the API; the frontend service overrides this in compose.
-CMD ["uvicorn", "threatlens_ai.backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default: run both services in one container (used by Hugging Face Spaces).
+# docker-compose overrides this with a per-service command.
+CMD ["/app/start.sh"]

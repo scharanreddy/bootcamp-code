@@ -1,3 +1,13 @@
+---
+title: ThreatLens AI
+emoji: 🛡️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # 🛡️ ThreatLens AI
 
 **AI-powered threat intelligence platform.** ThreatLens AI enriches CVEs with
@@ -216,6 +226,38 @@ docker compose down
   `docker compose logs backend`. The most common cause is a missing/invalid
   `OPENAI_API_KEY` or `NVD_API_KEY` in `.env`.
 - *`.env` not found:* run `cp .env.example .env` in the project root before `docker compose up`.
+
+## 🤗 Deploy to Hugging Face Spaces
+
+Spaces exposes a single port, so ThreatLens AI ships as a **Docker Space** that
+runs the backend and frontend together (see [`start.sh`](start.sh)). Streamlit is
+served on the public port `7860`; the frontend reaches the backend internally at
+`http://localhost:8000`.
+
+1. **Create the Space** — on <https://huggingface.co/new-space>, choose **Docker → Blank**, and note the Space's git URL.
+2. **Push the code** to the Space repo:
+   ```bash
+   git remote add space https://huggingface.co/spaces/<your-username>/<space-name>
+   git push space sprint-10-changes:main
+   ```
+   The `README.md` YAML front matter (`sdk: docker`, `app_port: 7860`) tells the
+   Space how to build and which port to serve.
+3. **Add your keys as Space secrets** — in the Space, go to **Settings → Variables
+   and secrets → New secret** and add (these are injected as environment
+   variables at runtime; do **not** put them in a file):
+
+   | Secret name | Value |
+   | --- | --- |
+   | `OPENAI_API_KEY` | your OpenAI key |
+   | `NVD_API_KEY` | your NVD key |
+
+   `OPENAI_MODEL` is optional (add it as a **Variable** to override the default).
+   You do **not** need `API_BASE_URL` — the bundled backend is at `localhost:8000`.
+4. **Wait for the build** — the Space builds the Docker image and starts. Once
+   it's running, the dashboard is live at your Space URL.
+
+> Tip: after adding or changing secrets, use **Settings → Factory rebuild** so the
+> new values are picked up.
 
 ## 🌐 API endpoints
 
